@@ -19,13 +19,20 @@ variable "aws_ami" {
 
 # VPC and Subnet
 variable "aws_cidr_vpc" {
-  default = "10.0.0.0/27"
+  default = "172.28.0.0/16"
 }
 
-variable "aws_cidr_subnet" {
-  default = "10.0.0.0/28"
+variable "aws_cidr_subnet1" {
+  default = "172.28.0.0/24"
 }
 
+variable "aws_cidr_subnet2" {
+  default = "172.28.3.0/24"
+}
+
+variable "aws_sg" {
+  default = "sg_mediawiki"
+}
 
 variable "aws_tags" {
   type = "map"
