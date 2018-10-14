@@ -153,3 +153,11 @@ resource "aws_elb" "mw_elb" {
     lb_protocol       = "http"
   }
 }
+
+output "pem" {
+        value = ["${tls_private_key.mw_key.private_key_pem}"]
+}
+
+output "address" {
+  value = "${aws_elb.mw_elb.dns_name}"
+}
