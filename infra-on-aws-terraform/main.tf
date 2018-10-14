@@ -14,24 +14,45 @@ resource "aws_vpc" "mw_vpc" {
   }
 }
 
-resource "aws_internet_gateway" "mw_subnet1_igw" {
-   #depends_on = ["${aws_vpc.mw_vpc}"]
-   vpc_id = "${aws_vpc.mw_vpc.id}"
+# Creating Internet Gateway to provide Internet to the Subnet
+resource "aws_internet_gateway" "mw_igw" {
+    vpc_id = "${aws_vpc.mw_vpc.id}"
     tags {
         Name = "MediaWiki Internet Gateway for Subnet1"
     }
 }
 
+# Grant the VPC internet access on its main route table
+
+resource "aws_route_table" "mw_rt" {
+  vpc_id = "${aws_vpc.mw_vpc.id}"
+  route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = "${aws_internet_gateway.mw_igw.id}"
+    }
+}
+
+resource "aws_route_table_association" "PublicAZA" {
+    subnet_id = "${aws_subnet.mw_subnet1.id}"
+    route_table_id = "${aws_route_table.mw_rt.id}"
+}
+
+
 resource "aws_subnet" "mw_subnet1" {
   vpc_id = "${aws_vpc.mw_vpc.id}"
   cidr_block = "${var.aws_cidr_subnet1}"
+  availability_zone = "${element(var.azs, 1)}"
+
   tags {
     Name = "MediaWikiSubnet1"
   }
 }
+
+
 resource "aws_subnet" "mw_subnet2" {
   vpc_id = "${aws_vpc.mw_vpc.id}"
   cidr_block = "${var.aws_cidr_subnet2}"
+  availability_zone = "${element(var.azs, 2)}"
   tags {
     Name = "MediaWikiSubnet2"
   }
@@ -39,7 +60,6 @@ resource "aws_subnet" "mw_subnet2" {
 
 resource "aws_security_group" "mw_sg" {
   name = "mw_sg"
-  #depends_on = ["${aws_vpc.mw_vpc}"]
   vpc_id = "${aws_vpc.mw_vpc.id}"
   ingress {
     from_port = 80
@@ -75,19 +95,34 @@ resource "aws_key_pair" "generated_key" {
 
 
 # Launch the instance
-resource "aws_instance" "webserver" {
+resource "aws_instance" "webserver1" {
   #depends_on = ["${aws_security_group.mw_sg}"]
-  count         = 2
   ami           = "${var.aws_ami}"
   instance_type = "${var.aws_instance_type}"
   key_name  = "${aws_key_pair.generated_key.key_name}"
   vpc_security_group_ids = ["${aws_security_group.mw_sg.id}"]
   subnet_id     = "${aws_subnet.mw_subnet1.id}" 
+  associate_public_ip_address = true
   tags {
-    Name = "${lookup(var.aws_tags,"webserver")}"
+    Name = "${lookup(var.aws_tags,"webserver1")}"
     group = "webservers"
   }
 }
+
+resource "aws_instance" "webserver2" {
+  #depends_on = ["${aws_security_group.mw_sg}"]
+  ami           = "${var.aws_ami}"
+  instance_type = "${var.aws_instance_type}"
+  key_name  = "${aws_key_pair.generated_key.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.mw_sg.id}"]
+  subnet_id     = "${aws_subnet.mw_subnet2.id}" 
+  associate_public_ip_address = true
+  tags {
+    Name = "${lookup(var.aws_tags,"webserver2")}"
+    group = "webservers"
+  }
+}
+
 
 
 resource "aws_instance" "dbserver" {
@@ -110,6 +145,7 @@ resource "aws_elb" "mw_elb" {
   name = "MediaWikiELB"
   subnets         = ["${aws_subnet.mw_subnet1.id}", "${aws_subnet.mw_subnet2.id}"]
   security_groups = ["${aws_security_group.mw_sg.id}"]
+  instances = ["${aws_instance.webserver1.id}", "${aws_instance.webserver2.id}"]
   listener {
     instance_port     = 80
     instance_protocol = "http"
