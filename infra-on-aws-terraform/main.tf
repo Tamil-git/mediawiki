@@ -9,6 +9,8 @@ provider "aws" {
 # Setting up VPC
 resource "aws_vpc" "mw_vpc" {
   cidr_block = "${var.aws_cidr_vpc}"
+  enable_dns_support = true
+  enable_dns_hostnames = true
   tags {
     Name = "MediaWikiVPC"
   }
@@ -62,6 +64,12 @@ resource "aws_security_group" "mw_sg" {
   name = "mw_sg"
   vpc_id = "${aws_vpc.mw_vpc.id}"
   ingress {
+    from_port = 22 
+    to_port  = 22
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+   ingress {
     from_port = 80
     to_port  = 80
     protocol = "TCP"
