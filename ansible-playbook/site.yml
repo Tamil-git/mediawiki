@@ -1,0 +1,8 @@
+---
+- name: Running MediaWiki on RedHat
+  hosts: "{{group}}"
+  become: yes
+
+  roles: 
+  - { role: db }
+  - { role: web}
