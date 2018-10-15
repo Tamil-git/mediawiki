@@ -1,8 +1,13 @@
 ---
-- name: Running MediaWiki on RedHat
-  hosts: "{{group}}"
-  become: yes
+#This playbook deploys the mediawiki 
+- name: Media Wiki Database and WebServer
+  hosts: all
+  become: yes 
 
-  roles: 
-  - { role: db }
-  - { role: web}
+# Extra Vars passed from command line
+  vars_files: 
+    - vault.yml
+
+  roles:
+   - mysqldb
+   - web

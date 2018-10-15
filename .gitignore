@@ -7,3 +7,4 @@
 .terraform/
 tfplan
 *.pem
+*.retry
