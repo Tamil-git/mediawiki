@@ -1,9 +1,9 @@
 #Cloud Provider Access
 
 provider "aws" {
- # access_key = "${var.access_key}"
- # secret_key = "${var.secret_key}"
-  region     = "${var.region}"
+ #access_key = "${var.access_key}"
+ #secret_key = "${var.secret_key}"
+ region     = "${var.region}"
 }
 
 # Setting up VPC
@@ -17,27 +17,27 @@ resource "aws_vpc" "mw_vpc" {
 }
 
 # Creating Internet Gateway to provide Internet to the Subnet
-resource "aws_internet_gateway" "mw_igw" {
-    vpc_id = "${aws_vpc.mw_vpc.id}"
-    tags {
-        Name = "MediaWiki Internet Gateway for Subnet1"
-    }
-}
+#resource "aws_internet_gateway" "mw_igw" {
+#    vpc_id = "${aws_vpc.mw_vpc.id}"
+#    tags {
+#        Name = "MediaWiki Internet Gateway for Subnet1"
+#    }
+#}
 
 # Grant the VPC internet access on its main route table
 
-resource "aws_route_table" "mw_rt" {
-  vpc_id = "${aws_vpc.mw_vpc.id}"
-  route {
-        cidr_block = "0.0.0.0/0"
-        gateway_id = "${aws_internet_gateway.mw_igw.id}"
-    }
-}
+#resource "aws_route_table" "mw_rt" {
+#  vpc_id = "${aws_vpc.mw_vpc.id}"
+#  route {
+#        cidr_block = "0.0.0.0/0"
+#        gateway_id = "${aws_internet_gateway.mw_igw.id}"
+#    }
+#}
 
-resource "aws_route_table_association" "PublicAZA" {
-    subnet_id = "${aws_subnet.mw_subnet1.id}"
-    route_table_id = "${aws_route_table.mw_rt.id}"
-}
+#resource "aws_route_table_association" "PublicAZA" {
+#    subnet_id = "${aws_subnet.mw_subnet1.id}"
+#    route_table_id = "${aws_route_table.mw_rt.id}"
+#}
 
 
 resource "aws_subnet" "mw_subnet1" {
@@ -59,6 +59,16 @@ resource "aws_subnet" "mw_subnet2" {
     Name = "MediaWikiSubnet2"
   }
 }
+
+resource "aws_subnet" "mw_subnet3" {
+  vpc_id = "${aws_vpc.mw_vpc.id}"
+  cidr_block = "${var.aws_cidr_subnet2}"
+  availability_zone = "${element(var.azs, 0)}"
+  tags {
+    Name = "MediaWikiSubnet3"
+  }
+}
+
 
 resource "aws_security_group" "mw_sg" {
   name = "mw_sg"
@@ -92,7 +102,7 @@ resource "aws_security_group" "mw_sg" {
 
 resource "tls_private_key" "mw_key" {
   algorithm = "RSA"
-  rsa_bits  = 4096
+  rsa_bits  = 2048
 }
 
 resource "aws_key_pair" "generated_key" {
@@ -104,7 +114,6 @@ resource "aws_key_pair" "generated_key" {
 
 # Launch the instance
 resource "aws_instance" "webserver1" {
-  #depends_on = ["${aws_security_group.mw_sg}"]
   ami           = "${var.aws_ami}"
   instance_type = "${var.aws_instance_type}"
   key_name  = "${aws_key_pair.generated_key.key_name}"
@@ -113,7 +122,7 @@ resource "aws_instance" "webserver1" {
   associate_public_ip_address = true
   tags {
     Name = "${lookup(var.aws_tags,"webserver1")}"
-    group = "webservers"
+    group = "web"
   }
 }
 
@@ -127,7 +136,7 @@ resource "aws_instance" "webserver2" {
   associate_public_ip_address = true
   tags {
     Name = "${lookup(var.aws_tags,"webserver2")}"
-    group = "webservers"
+    group = "web"
   }
 }
 
@@ -143,13 +152,12 @@ resource "aws_instance" "dbserver" {
 
   tags {
     Name = "${lookup(var.aws_tags,"dbserver")}"
-    group = "dbserver"
+    group = "db"
   }
 }
 
 
 resource "aws_elb" "mw_elb" {
-  #depends_on = ["${aws_instance.webserver}"]
   name = "MediaWikiELB"
   subnets         = ["${aws_subnet.mw_subnet1.id}", "${aws_subnet.mw_subnet2.id}"]
   security_groups = ["${aws_security_group.mw_sg.id}"]

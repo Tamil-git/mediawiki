@@ -6,12 +6,19 @@ What's Covered:
 ----------------
  - Terraform Module that does the following: 
  	- 1 VPC
- 	- 2 Subnets, igw, SG,  
+ 	- 3 Subnets  
  	- 1 Keypair 
  	- 3 EC2 Instances - 2 Web and 1 DB
  	- 1 Elastic Load Balancer
    
  - Ansible Playbook that performs the following: 
+    - Dynamically fetches your resources based on the tags you defined in the terraform IaC. 
+    - Performs the Installation of the MySQL Database
+    - Creates the Database and Users and other Validations. 
+    - Encrypts the passwords into a vault. 
+    - Role that installs Apache HTTPD, PHP from third-party repositories (remi, epel)
+    - Configures the webserver
+    - Makes it ready for the Launch on the browser. 
 
 
 Assumptions/Pre-Requisites: 

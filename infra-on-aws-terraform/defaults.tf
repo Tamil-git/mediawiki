@@ -19,22 +19,26 @@ variable "keyname" {
   default = "mediawiki"
 }
 
-# AMI RHEL-6.7_HVM-20160219-x86_64-1-Hourly2-GP2 - ami-274ba847
+# RHEL 7.5
 variable "aws_ami" {
-  default="ami-274ba847"
+  default="ami-28e07e50)"
 }
 
 # VPC and Subnet
 variable "aws_cidr_vpc" {
-  default = "172.28.0.0/16"
+  default = "10.0.0.0/16"
 }
 
 variable "aws_cidr_subnet1" {
-  default = "172.28.0.0/24"
+  default = "10.0.1.0/24"
 }
 
 variable "aws_cidr_subnet2" {
-  default = "172.28.3.0/24"
+  default = "10.0.2.0/24"
+}
+
+variable "aws_cidr_subnet3" {
+  default = "10.0.3.0/24"
 }
 
 variable "aws_sg" {
