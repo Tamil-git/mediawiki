@@ -9,5 +9,6 @@
     - vault.yml
 
   roles:
-   - mysqldb
-   - web
+   - { role: mysqldb, tags: ['install_db'] }
+   - { role: web, tags: [ 'install_web' ] }
+    

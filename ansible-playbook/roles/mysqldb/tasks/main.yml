@@ -30,11 +30,12 @@
   mysql_user:
     name: "{{ wiki_db_user }}"
     password: "{{ WIKI_DB_PASSWORD }} "
-    host: localhost
+    host:  '%'
     priv: '{{ db_name }}.*:ALL,GRANT'
     state: present
     login_user: root
     login_password: '{{ ROOT_PASSWORD }}'
+
 
 - name: Confirmation on Creation.
   shell: 'mysql -u root -p{{ ROOT_PASSWORD }} --execute="SHOW DATABASES;"'
